@@ -41,3 +41,15 @@ namespace :spec do
 end
 
 task :default => 'spec:all'
+
+Rake::Task[:release].tap do |task|
+  task.clear
+  task.instance_variable_set :@arg_names, nil
+end
+
+desc "Build and release v#{AssetSync::VERSION} to Gemfury"
+task :release => :build do
+  sh "curl -F package=@pkg/asset_sync-#{AssetSync::VERSION}.gem https://#{ENV.fetch('GEMFURY_TOKEN')}@push.fury.io/#{ENV.fetch('GEMFURY_USERNAME')}/"
+  sh "git tag v#{AssetSync::VERSION} -m 'Release #{AssetSync::VERSION}'"
+  sh "git push origin v#{AssetSync::VERSION}"
+end
